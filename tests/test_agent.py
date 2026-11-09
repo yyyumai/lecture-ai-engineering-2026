@@ -1,6 +1,6 @@
 """エージェントの配線テスト。
 
-TestModel は実際のLLMを呼ばない偽モデルで、登録されたツールを全部呼んでから
+TestModel は実際のLLMを呼ばない偽モデル。ここでは読み取り用ツールを指定し、
 ダミーの回答を返す。APIキーも利用枠も使わずに、
 「ツールが登録され、呼ばれ、結果がモデルに戻るか」を確かめられる。
 """
@@ -18,7 +18,7 @@ def _parts(result, kind):
 
 
 def test_base_tools_are_registered_and_called():
-    model = TestModel()
+    model = TestModel(call_tools=sorted(BASE_TOOLS))
     with agent.override(model=model):
         result = agent.run_sync("LoRAとは？")
 

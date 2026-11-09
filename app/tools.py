@@ -7,8 +7,10 @@
 import json
 from functools import cache
 from pathlib import Path
+from uuid import uuid4
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +79,19 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(content: str) -> str:
+    """利用者が学んだことを記録したいとき、学習内容を learning_log/ に保存する。
+
+    content には保存する学習内容を入れる。利用者が保存を希望したときだけ使う。
+    実行前にCLIで内容を表示し、利用者の承認を得る。
+    """
+    if not content.strip():
+        return "学習内容が空です。保存する内容を指定してください。"
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LEARNING_LOG_DIR / f"{uuid4().hex}.md"
+    # ファイル名はプログラム側で決め、既存の記録を上書きしない。
+    with path.open("x", encoding="utf-8") as f:
+        f.write(content + "\n")
+    return f"学習記録を保存しました: {path}"
