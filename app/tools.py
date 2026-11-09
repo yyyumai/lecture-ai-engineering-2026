@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 from uuid import uuid4
@@ -95,3 +96,29 @@ def save_learning_log(content: str) -> str:
     with path.open("x", encoding="utf-8") as f:
         f.write(content + "\n")
     return f"学習記録を保存しました: {path}"
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つを選び、確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う。
+    lecture には対象の回番号（1始まり）を入れる。指定した回に用語がなければ、
+    どの回に何があるかを分かりやすく示して返す。
+    """
+    glossary = load_glossary()
+    terms = [e for e in glossary if e.get("lecture") == lecture]
+    if not terms:
+        available = sorted({int(e["lecture"]) for e in glossary})
+        return (
+            f"第{lecture}回には用語がありません。"
+            f"利用可能な回: {', '.join(str(n) for n in available)}"
+        )
+
+    choice = random.choice(terms)
+    return json.dumps(
+        {
+            "question": f'「{choice["term"]}」の意味は？',
+            "answer": choice["definition"],
+        },
+        ensure_ascii=False,
+    )
